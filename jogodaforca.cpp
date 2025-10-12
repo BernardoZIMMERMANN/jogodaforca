@@ -2,206 +2,188 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
+#include <time.h>
  
 using namespace std;
- 
-//Área de definição de cabeçalhos de função
-void menuInicial();
  
 void limpaTela(){
     system("CLS");
 }
  
-void iniciaTabuleiro(char tabuleiro[3][3]){
+string retornaPalavraAleatoria(){
  
-    //Navega por cada posição do tabuleiro e coloca o símbolo de '-'
-    int linha,coluna;
-    for(linha = 0; linha < 3; linha++){
-        for(coluna = 0; coluna < 3; coluna++){
-            tabuleiro[linha][coluna] = '-';
-        }
+     //Vetor com palavras disponíveis
+    string palavras[3] = {"abacaxi", "manga", "morango"};
+ 
+    //Indice gerado no intervalo {0,1,2}
+    int indiceAleatorio = rand() % 3;
+ 
+    //Exibe a palavra aleatória
+    //cout << palavras[indiceAleatorio];
+ 
+    return palavras[indiceAleatorio];
+}
+ 
+string retornaPalavraComMascara(string palavra, int tamanhoDaPalavra){
+ 
+    int cont = 0;
+    string palavraComMascara;
+ 
+    //Coloca uma máscara
+    while(cont < tamanhoDaPalavra){
+        palavraComMascara += "_";
+        cont++;
+    }
+ 
+    return palavraComMascara;
+}
+ 
+void exibeStatus(string palavraComMascara, int tamanhoDaPalavra, int tentativasRestantes, string letrasJaArriscadas, string mensagem){
+ 
+    //cout << "A palavra secreta eh: " << palavra << "(Tamanho:" << tamanhoDaPalavra << ")";
+    cout << mensagem;
+    cout << "\nPalavra:" << palavraComMascara << "(Tamanho:" << tamanhoDaPalavra << ")";
+    cout << "\nTentativas Restantes:" << tentativasRestantes;
+ 
+    //Exibe as letras arriscadas
+    int cont;
+    cout << "\nLetras arriscadas:";
+    for(cont = 0; cont < letrasJaArriscadas.size();cont++){
+        cout << letrasJaArriscadas[cont] << ", ";
     }
  
 }
  
-void exibeTabuleiro (char tabuleiro[3][3]){
+int jogar(int numeroDeJogadores){
  
-     //Exibe o tabuleiro com suas linhas e colunas quebrando a linha ao sair de um for
-    int linha,coluna;
-    cout << "\n";
-    for(linha = 0; linha < 3; linha++){
-        for(coluna = 0; coluna < 3; coluna++){
-            cout << tabuleiro[linha][coluna];
-        }
-        cout << "\n";
+    //Palavra a ser adivinhada
+    string palavra;
+ 
+    //Confere o número de jogadores
+    if(numeroDeJogadores == 1){
+ 
+        //Palavra a ser adivinhada
+        palavra = retornaPalavraAleatoria();
+ 
+    }else{
+ 
+        cout << "\nDigite uma palavra:";
+        cin >> palavra;
+ 
     }
  
-}
+    //Tamanho da palavra
+    int tamanhoDaPalavra = palavra.size();
  
-//1 = X venceu, 2 = O venceu, 0 = Nada Aconteceu
-int confereTabuleiro(char tabuleiro[3][3]){
- 
-        int linha, coluna;
- 
-        //Confere linhas
-        for(linha = 0; linha < 3; linha++){
-            if(tabuleiro[linha][0] == 'X' && tabuleiro[linha][0] == tabuleiro[linha][1] && tabuleiro[linha][1] == tabuleiro[linha][2]){
-                return 1;
-            }else if(tabuleiro[linha][0] == 'O' && tabuleiro[linha][0] == tabuleiro[linha][1] && tabuleiro[linha][1] == tabuleiro[linha][2]){
-                return 2;
-            }
-        }
- 
-        //Confere Colunas
-        for(coluna = 0; coluna < 3; coluna++){
-            if(tabuleiro[0][coluna] == 'X' && tabuleiro[0][coluna] == tabuleiro[1][coluna] && tabuleiro[1][coluna] == tabuleiro[2][coluna]){
-                return 1;
-            }else if(tabuleiro[0][coluna] == 'O' && tabuleiro[0][coluna] == tabuleiro[1][coluna] && tabuleiro[1][coluna] == tabuleiro[2][coluna]){
-                return 2;
-            }
-        }
- 
-        //Diagonal Principal
-        if(tabuleiro[0][0] != '-' && tabuleiro[0][0] == tabuleiro[1][1] && tabuleiro[1][1] == tabuleiro[2][2]){
- 
-            if(tabuleiro[0][0] == 'X'){
-               return 1;
-            }else{
-               return 2;
-            }
-        }
- 
-        //Diagonal Secundária
-        if(tabuleiro[0][2] != '-' && tabuleiro[0][2] == tabuleiro[1][1] && tabuleiro[1][1] == tabuleiro[2][0]){
- 
-            if(tabuleiro[0][2] == 'X'){
-                return 1;
-            }else{
-               return 2;
-            }
-        }
- 
-        return 0;
-}
- 
- 
-void exibeInstrucoes(){
- 
-    cout << "\nMapa de Posicoes:";
-    cout << "\n 7 | 8 | 9";
-    cout << "\n 4 | 5 | 6";
-    cout << "\n 1 | 2 | 3";
- 
-}
- 
-void jogo(string nomeDoJogadorUm, string nomeDoJogadorDois, int pontuacaoJogadorUm, int pontuacaoJogadorDois){
+    //Palavra mascarada
+    string palavraComMascara = retornaPalavraComMascara(palavra, tamanhoDaPalavra);
  
     ///Variáveis Gerais
-    string nomeDoJogadorAtual;//Nomes dos jogadores
-    char tabuleiro[3][3];                                       //Tabuleiro do Jogo
-    int linha,coluna;                                           //Auxiliares para tabuleiro
-    int linhaJogada,colunaJogada,posicaoJogada;                 //Posição em que o jogador posiciona sua marca
-    int estadoDeJogo = 1;                                       //0 = Sem jogo,1 = Em Jogo
-    int turnoDoJogador = 1;                                     //1 = X, 2 = O
-    int rodada = 0;                                             //Quantas vezes os jogadores jogaram no total
-    int opcao;                                                  //Opção de reinício
-    bool posicionouJogada;                                      //Verifica se o jogador colocou um marcador no tabuleiro
+    int tentativas = 0, maximoDeTentativas = 10;            //Número de tentativas e erros
+    int cont = 0;                                           //Auxiliar para laços de repetição
+    char letra;                                             //Letra arriscada pelo usuário
+    int opcao;                                              //Opções finais
+    string letrasJaArriscadas;                              //Acumula as tentativas do jogador
+    string mensagem = "Bem vindo ao jogo!";                 //Feedback do jogador
+    string palavraArriscada;                                //Tentativa de arriscar a palavra completa
+    bool jaDigitouLetra = false, acertouLetra = false;      //Auxiliar para saber se a letra já foi digitada
  
-    //Coloca os '-' no tabuleiro para indicar o vazio
-    iniciaTabuleiro(tabuleiro);
  
-    while(rodada < 9 && estadoDeJogo == 1){
+    while(palavra != palavraComMascara && maximoDeTentativas - tentativas > 0){
  
         limpaTela();
  
-        cout << "\nRodada:" << rodada << "\n";
-        cout << "Pontuacao:" << nomeDoJogadorUm << " " << pontuacaoJogadorUm << " x " << pontuacaoJogadorDois << " " << nomeDoJogadorDois;
+        //Exibe o status atual do jogo
+        exibeStatus(palavraComMascara, tamanhoDaPalavra, maximoDeTentativas - tentativas, letrasJaArriscadas,mensagem);
  
-        //Exibe o tabuleiro na tela
-        exibeTabuleiro(tabuleiro);
+        //Lê um palpite
+        cout << "\nDigite uma letra (Ou digite 1 para arriscar a palavra):";
+        cin >> letra;
  
-        //Exibe qual numero corresponde a qual posicao
-        exibeInstrucoes();
- 
- 
-        //Atualiza o nome do jogador atual
-        if(turnoDoJogador == 1){
- 
-            nomeDoJogadorAtual = nomeDoJogadorUm;
- 
-        }else{
- 
-            nomeDoJogadorAtual = nomeDoJogadorDois;
- 
+        //Se digitar 1 deixa o usuário arriscar a palavra inteira
+        if(letra == '1'){
+            cin >> palavraArriscada;
+            if(palavraArriscada == palavra){
+                 palavraComMascara = palavraArriscada;
+            }else{
+                 tentativas = maximoDeTentativas;
+            }
         }
  
-        posicionouJogada = false;
+        //Percorre as letras já arriscadas
+        for(cont = 0; cont < tentativas; cont++){
  
-        //Matriz de posicoes possíveis
-        int posicoes[9][2] = {{2,0},{2,1},{2,2},{1,0},{1,1},{1,2},{0,0},{0,1},{0,2}};
+            //Se encontrar a letra
+            if(letrasJaArriscadas[cont] == letra){
  
-        while(posicionouJogada == false){
+                mensagem = "Essa letra ja foi digitada!";
  
-            //Lê a jogada
-            cout << "\n" << nomeDoJogadorAtual << "Digite uma posicao conforme o mapa acima:";
-            cin >> posicaoJogada;
+                //Indica com a variável booleana
+                jaDigitouLetra = true;
  
-            //Passa a linha e coluna de acordo com a matriz de posições exibida no mapa
-            linhaJogada = posicoes[posicaoJogada-1][0];
-            colunaJogada = posicoes[posicaoJogada-1][1];
+            }
+        }
  
-            //Verifica se a posição é vazia
-            if(tabuleiro[linhaJogada][colunaJogada] == '-'){
+        //Se for uma letra nova
+        if(jaDigitouLetra == false){
  
-                //Conseguiu posicionar um marcador
-                posicionouJogada = true;
+            //Incrementa as letras já arriscadas
+            letrasJaArriscadas += tolower(letra);
  
-                //Verifica de quem é a vez para posicionar o marcador
-                if(turnoDoJogador == 1){
+            //Percorre a palavra real e
+            for(cont = 0; cont < tamanhoDaPalavra; cont++){
  
-                    tabuleiro[linhaJogada][colunaJogada] = 'X';
+                //Se a letra existir na palavra escondida
+                if(palavra[cont] == tolower(letra)){
  
-                    turnoDoJogador = 2;
+                    //Faço aquela letra aparecer na palavraComMascara
+                    palavraComMascara[cont] = palavra[cont];
  
-                }else{
- 
-                    tabuleiro[linhaJogada][colunaJogada] = 'O';
- 
-                    turnoDoJogador = 1;
+                    acertouLetra = true;
  
                 }
+            }
+ 
+            if(acertouLetra == false){
+ 
+                mensagem = "Voce errou uma letra!";
+ 
+            }else{
+ 
+                mensagem = "Voce acertou uma letra!";
  
             }
  
+            //Aumenta uma tentativa realizada
+            tentativas++;
+ 
         }
  
-        //Confere se o jogo acabou
-        if(confereTabuleiro(tabuleiro) == 1){
-            cout << "O jogador X venceu";
-            pontuacaoJogadorUm++;
-            estadoDeJogo = 0;
-        }else if(confereTabuleiro(tabuleiro) == 2){
-            cout << "O jogador O venceu";
-            pontuacaoJogadorDois++;
-            estadoDeJogo = 0;
-        }
- 
-        //Aumenta uma rodada
-        rodada++;
+        //Reinicia auxiliares
+        jaDigitouLetra = false;
+        acertouLetra = false;
  
     }
  
-    exibeTabuleiro(tabuleiro);
-    cout << "Fim de jogo";
-    cout << "\nO que deseja fazer?";
-    cout << "\n1-Continuar Jogando";
-    cout << "\n2-Menu Inicial";
-    cout << "\n3-Sair";
-    cin >> opcao;
-    if(opcao == 1){
-        jogo(nomeDoJogadorUm, nomeDoJogadorDois,pontuacaoJogadorUm,pontuacaoJogadorDois);
-    }else if(opcao == 2){
-        menuInicial();
+    if(palavra == palavraComMascara){
+ 
+        limpaTela();
+        cout << "Parabens, você venceu!";
+        cout << "\nDeseja reiniciar?";
+        cout << "\n1-Sim";
+        cout << "\n2-Nao";
+        cin >> opcao;
+        return opcao;
+ 
+    }else{
+ 
+        limpaTela();
+        cout << "Bleh, você perdeu!";
+        cout << "\nDeseja reiniciar?";
+        cout << "\n1-Sim";
+        cout << "\n2-Nao";
+        cin >> opcao;
+        return opcao;
     }
  
 }
@@ -211,16 +193,14 @@ void menuInicial(){
     //Opção escolhida pelo usuário
     int opcao = 0;
  
-    //Nome dos jogadores
-    string nomeDoJogadorUm, nomeDoJogadorDois;
- 
     //Enquanto o jogador não digita uma opcao válida, mostra o menu novamente
     while(opcao < 1 || opcao > 3){
         limpaTela();
-        cout << "Bem vindo ao Jogo da Velha";
-        cout << "\n1 - Jogar";
-        cout << "\n2 - Sobre";
-        cout << "\n3 - Sair";
+        cout << "Bem vindo ao Jogo";
+        cout << "\n1 - Jogar Sozinho";
+        cout << "\n2 - Jogar em Dupla";
+        cout << "\n3 - Sobre";
+        cout << "\n4 - Sair";
         cout << "\nEscolha uma opcao e tecle ENTER:";
  
         //Faz a leitura da opcao
@@ -230,18 +210,30 @@ void menuInicial(){
         switch(opcao){
             case 1:
                 //Inicia o jogo
-                //cout << "Jogo iniciado";
-                cout << "Digite o nome do jogador 1:";
-                cin >> nomeDoJogadorUm;
-                cout << "Digite o nome do jogador 2:";
-                cin >> nomeDoJogadorDois;
-                jogo(nomeDoJogadorUm, nomeDoJogadorDois,0,0);
+                if(jogar(1) == 1){
+                    menuInicial();
+                }
                 break;
             case 2:
-                //Mostra informacoes do Jogo
-                cout << "Informacoes do jogo";
+                //Inicia o jogo
+                if(jogar(2) == 1){
+                    menuInicial();
+                }
                 break;
             case 3:
+                //Mostra informacoes do Jogo
+                cout << "Informacoes do jogo";
+                limpaTela();
+                cout << "Jogo desenvolvido por Joao em 2017";
+                cout << "\n1 - Voltar";
+                cout << "\n2 - Sair";
+                cin >> opcao;
+                if(opcao == 1){
+                    menuInicial();
+                }
+ 
+                break;
+            case 4:
                 cout << "Ate mais!";
                 break;
         }
@@ -251,6 +243,10 @@ void menuInicial(){
  
 int main(){
  
+    //Para gerar números realmente aleatórios
+    srand( (unsigned)time(NULL));
+ 
     menuInicial();
+ 
     return 0;
 }
